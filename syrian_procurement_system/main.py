@@ -1,15 +1,23 @@
+# -*- coding: utf-8 -*-
+
+"""
+نقطة الدخول الرئيسية لنظام إدارة المشتريات الوطني السوري.
+"""
+
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtWidgets import QApplication
+from syrian_procurement_system.controllers.auth_controller import AuthController
 
 def main():
     """
-    The main entry point for the Syrian National Procurement Management System.
+    الوظيفة الرئيسية التي تقوم بتشغيل التطبيق.
     """
     app = QApplication(sys.argv)
-    window = QMainWindow()
-    window.setWindowTitle("نظام إدارة المشتريات الوطني السوري")
-    window.resize(800, 600)
-    window.show()
+
+    # إنشاء وتشغيل وحدة التحكم الخاصة بالمصادقة
+    auth_controller = AuthController()
+    auth_controller.show_login()
+
     sys.exit(app.exec())
 
 if __name__ == "__main__":
