@@ -6,7 +6,7 @@
 
 import sys
 from PyQt6.QtWidgets import QApplication
-from syrian_procurement_system.controllers.auth_controller import AuthController
+from controllers.auth_controller import AuthController
 
 def main():
     """

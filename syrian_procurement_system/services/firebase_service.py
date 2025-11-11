@@ -6,7 +6,7 @@
 
 import requests
 import json
-from syrian_procurement_system.config.firebase_config import FIREBASE_CONFIG
+from config.firebase_config import FIREBASE_CONFIG
 
 class FirebaseService:
     """

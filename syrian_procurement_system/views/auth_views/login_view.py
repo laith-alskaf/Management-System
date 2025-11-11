@@ -87,7 +87,7 @@ class LoginView(QWidget):
         self.email_input = QLineEdit(self)
         self.email_input.setPlaceholderText("البريد الإلكتروني")
         self.email_input.setFont(primary_font)
-        self.email_input.setAlignment(Qt.AlignmentFlag.RightToLeft)
+        self.email_input.setAlignment(Qt.AlignmentFlag.AlignRight)
         layout.addWidget(self.email_input)
 
         # حقل كلمة المرور
@@ -95,7 +95,7 @@ class LoginView(QWidget):
         self.password_input.setPlaceholderText("كلمة المرور")
         self.password_input.setFont(primary_font)
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self.password_input.setAlignment(Qt.AlignmentFlag.RightToLeft)
+        self.password_input.setAlignment(Qt.AlignmentFlag.AlignRight)
         layout.addWidget(self.password_input)
 
         # خيار "تذكرني"
