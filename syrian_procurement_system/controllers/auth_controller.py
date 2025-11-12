@@ -4,8 +4,9 @@
 وحدة التحكم الخاصة بالمصادقة (Authentication Controller)
 """
 
-from services.firebase_service import FirebaseService
-from views.auth_views.login_view import LoginView
+from syrian_procurement_system.services.firebase_service import FirebaseService
+from syrian_procurement_system.views.auth_views.login_view import LoginView
+from syrian_procurement_system.controllers.dashboard_controller import DashboardController
 
 class AuthController:
     """
@@ -14,6 +15,7 @@ class AuthController:
     def __init__(self):
         self.firebase_service = FirebaseService()
         self.login_view = LoginView(self)
+        self.dashboard_controller = None  # للحفاظ على مرجع لوحدة التحكم
         self._connect_signals()
 
     def _connect_signals(self):
@@ -54,11 +56,12 @@ class AuthController:
 
         if user_data and 'idToken' in user_data:
             # نجاح تسجيل الدخول
-            print("تم تسجيل الدخول بنجاح!", user_data)
-            self.login_view.hide()
-            # هنا سيتم لاحقًا عرض لوحة التحكم الرئيسية
-            # self.main_dashboard = DashboardView()
-            # self.main_dashboard.show()
+            print("تم تسجيل الدخول بنجاح!")
+            self.login_view.close()  # إغلاق نافذة تسجيل الدخول
+
+            # إنشاء وعرض لوحة التحكم الرئيسية مع تمرير دالة الـ callback
+            self.dashboard_controller = DashboardController(logout_callback=self.show_login)
+            self.dashboard_controller.show()
         else:
             # فشل تسجيل الدخول
             error_message = "البريد الإلكتروني أو كلمة المرور غير صحيحة."

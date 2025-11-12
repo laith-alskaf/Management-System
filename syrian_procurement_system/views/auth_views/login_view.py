@@ -34,33 +34,6 @@ class LoginView(QWidget):
         # الألوان والخطوط (مستوحاة من الهوية السورية)
         primary_font = QFont("Simplified Arabic", 12)
         title_font = QFont("Simplified Arabic", 16, QFont.Weight.Bold)
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #FFFFFF; /* أبيض */
-            }
-            QLabel {
-                color: #000000; /* أسود */
-            }
-            QLineEdit {
-                border: 1px solid #007A3D; /* أخضر */
-                padding: 8px;
-                border-radius: 5px;
-                background-color: #F0F0F0;
-            }
-            QPushButton {
-                background-color: #CE1126; /* أحمر */
-                color: white;
-                padding: 10px;
-                border-radius: 5px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #A40E1E;
-            }
-            QCheckBox {
-                color: #000000;
-            }
-        """)
 
         # التخطيط الرئيسي
         layout = QVBoxLayout(self)
@@ -87,7 +60,7 @@ class LoginView(QWidget):
         self.email_input = QLineEdit(self)
         self.email_input.setPlaceholderText("البريد الإلكتروني")
         self.email_input.setFont(primary_font)
-        self.email_input.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.email_input.setAlignment(Qt.AlignmentFlag.RightToLeft)
         layout.addWidget(self.email_input)
 
         # حقل كلمة المرور
@@ -95,7 +68,7 @@ class LoginView(QWidget):
         self.password_input.setPlaceholderText("كلمة المرور")
         self.password_input.setFont(primary_font)
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self.password_input.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.password_input.setAlignment(Qt.AlignmentFlag.RightToLeft)
         layout.addWidget(self.password_input)
 
         # خيار "تذكرني"
