@@ -19,7 +19,6 @@ class SupplierController:
         self.view = SuppliersView(self)
         self.thread_pool = QThreadPool.globalInstance()
         self._connect_signals()
-        self._load_suppliers()
 
     def get_view(self):
         """
@@ -41,7 +40,7 @@ class SupplierController:
         """
         self._set_loading_state(True)
         worker = Worker(task_fn, *args)
-        worker.signals.result.connect(lambda result: self._on_task_success(on_success_msg))
+        worker.signals.result.connect(lambda result, msg=on_success_msg: self._on_task_success(msg))
         worker.signals.error.connect(self._on_task_error)
         worker.signals.finished.connect(lambda: self._set_loading_state(False))
         self.thread_pool.start(worker)
@@ -50,8 +49,9 @@ class SupplierController:
         """
         يتم استدعاؤها عند نجاح المهمة.
         """
-        self._load_suppliers()
-        self.view.show_message("نجاح", message)
+        self.load_suppliers()
+        if message:
+            self.view.show_message("نجاح", message)
 
     def _on_task_error(self, error_details):
         """
@@ -61,7 +61,7 @@ class SupplierController:
         error_message = f"فشلت العملية. قد يكون الاسم أو البريد الإلكتروني مسجلاً مسبقاً.\nالتفاصيل: {ex_value}"
         self.view.show_message("خطأ", error_message, is_error=True)
 
-    def _load_suppliers(self):
+    def load_suppliers(self):
         """
         تحميل بيانات الموردين من قاعدة البيانات وعرضها في الجدول.
         """

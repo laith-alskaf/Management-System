@@ -26,7 +26,9 @@ class MaterialsView(QWidget):
         main_layout.setSpacing(15)
 
         title_label = QLabel("إدارة المواد")
-        title_label.setFont(self.font().setPointSizeF(20))
+        font = self.font()
+        font.setPointSizeF(20)
+        title_label.setFont(font)
         title_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         main_layout.addWidget(title_label)
 

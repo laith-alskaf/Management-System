@@ -61,9 +61,9 @@ class AuthController:
         """
         if user_data and 'idToken' in user_data:
             print("تم تسجيل الدخول بنجاح!")
-            self.login_view.close()
             self.dashboard_controller = DashboardController(logout_callback=self.show_login)
             self.dashboard_controller.show()
+            self.login_view.close()
         else:
             # هذه الحالة قد تحدث إذا كانت الاستجابة غير متوقعة
             self._on_login_error()

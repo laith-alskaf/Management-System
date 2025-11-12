@@ -19,7 +19,6 @@ class MaterialController:
         self.view = MaterialsView(self)
         self.thread_pool = QThreadPool.globalInstance()
         self._connect_signals()
-        self._load_materials()
 
     def get_view(self):
         return self.view
@@ -40,7 +39,7 @@ class MaterialController:
     def _on_task_success(self, message):
         if message:
             self.view.show_message("نجاح", message)
-        self._load_materials()
+        self.load_materials()
 
     def _on_task_error(self, error_details):
         ex_type, ex_value, _ = error_details
@@ -48,11 +47,10 @@ class MaterialController:
         self.view.show_message("خطأ", error_message, is_error=True)
         self._set_loading_state(False)
 
-    def _load_materials(self):
+    def load_materials(self):
         worker = Worker(self.db_service.get_all_materials)
         worker.signals.result.connect(self._on_load_materials_result)
         worker.signals.error.connect(self._on_task_error)
-        # No loading state for initial load to avoid UI flicker
         self.thread_pool.start(worker)
 
     def _on_load_materials_result(self, materials):

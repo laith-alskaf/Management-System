@@ -15,6 +15,8 @@ class DashboardController:
     def __init__(self, logout_callback=None):
         self.view = DashboardView(self)
         self.logout_callback = logout_callback
+        self.suppliers_loaded = False
+        self.materials_loaded = False
 
         # تهيئة وحدات التحكم الفرعية
         self.supplier_controller = SupplierController()
@@ -37,14 +39,20 @@ class DashboardController:
 
     def show_suppliers(self):
         """
-        يعرض واجهة إدارة الموردين.
+        يعرض واجهة إدارة الموردين ويقوم بتحميل بياناتهم عند أول طلب.
         """
+        if not self.suppliers_loaded:
+            self.supplier_controller.load_suppliers()
+            self.suppliers_loaded = True
         self.view.stacked_widget.setCurrentWidget(self.supplier_controller.get_view())
 
     def show_materials(self):
         """
-        يعرض واجهة إدارة المواد.
+        يعرض واجهة إدارة المواد ويقوم بتحميل بياناتها عند أول طلب.
         """
+        if not self.materials_loaded:
+            self.material_controller.load_materials()
+            self.materials_loaded = True
         self.view.stacked_widget.setCurrentWidget(self.material_controller.get_view())
 
     def show(self):
