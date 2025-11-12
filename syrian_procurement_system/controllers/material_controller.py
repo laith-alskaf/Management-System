@@ -27,10 +27,10 @@ class MaterialController:
         self.view.edit_button.clicked.connect(self._edit_material_dialog)
         self.view.delete_button.clicked.connect(self._delete_material)
 
-    def _run_task(self, task_fn, *args, on_success_msg):
+    def _run_task(self, task_fn, *args, on_success_msg, **kwargs):
         self._set_loading_state(True)
-        worker = Worker(task_fn, *args)
-        worker.signals.result.connect(lambda result, msg=on_success_msg: self._on_task_success(msg))
+        worker = Worker(task_fn, *args, **kwargs)
+        worker.signals.result.connect(lambda result: self._on_task_success(on_success_msg))
         worker.signals.error.connect(self._on_task_error)
         worker.signals.finished.connect(lambda: self._set_loading_state(False))
         self.thread_pool.start(worker)
