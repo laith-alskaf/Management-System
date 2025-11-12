@@ -5,13 +5,12 @@
 """
 
 import sys
-from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-                             QPushButton, QLabel, QFrame, QSpacerItem, QSizePolicy)
+from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame, QSpacerItem, QSizePolicy, QStackedWidget)
 from PyQt6.QtCore import Qt, QLocale, QSize
 from PyQt6.QtGui import QIcon
 
 # المسارات النسبية قد تحتاج إلى تعديل عند التشغيل من main.py
-# from syrian_procurement_system.utils.syrian_themes import SyrianThemes
+from utils.syrian_themes import SyrianThemes
 
 class DashboardView(QMainWindow):
     """
@@ -80,27 +79,28 @@ class DashboardView(QMainWindow):
 
         main_layout.addWidget(sidebar)
 
-        # --- منطقة المحتوى الرئيسية ---
-        content_area = QWidget()
-        content_layout = QVBoxLayout(content_area)
-        content_layout.setContentsMargins(40, 40, 40, 40)
-        content_layout.setSpacing(25)
+        # --- منطقة المحتوى الرئيسية (باستخدام QStackedWidget) ---
+        self.stacked_widget = QStackedWidget()
+        main_layout.addWidget(self.stacked_widget)
 
-        # رسالة الترحيب
-        self.welcome_label = QLabel("أهلاً بك في نظام إدارة المشتريات الوطني السوري")
-        self.welcome_label.setFont(self.font_with_size(24, bold=True))
-        self.welcome_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-        content_layout.addWidget(self.welcome_label)
+        # الواجهة الرئيسية (الافتراضية)
+        welcome_widget = QWidget()
+        welcome_layout = QVBoxLayout(welcome_widget)
+        welcome_layout.setContentsMargins(40, 40, 40, 40)
+        welcome_layout.setSpacing(25)
+        welcome_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
-        # نص توضيحي
+        welcome_label = QLabel("أهلاً بك في نظام إدارة المشتريات الوطني السوري")
+        welcome_label.setFont(self.font_with_size(24, bold=True))
+        welcome_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+        welcome_layout.addWidget(welcome_label)
+
         info_label = QLabel("الرجاء تحديد خيار من القائمة الجانبية للبدء.")
         info_label.setFont(self.font_with_size(16))
         info_label.setAlignment(Qt.AlignmentFlag.AlignRight)
-        content_layout.addWidget(info_label)
+        welcome_layout.addWidget(info_label)
 
-        content_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
-
-        main_layout.addWidget(content_area)
+        self.stacked_widget.addWidget(welcome_widget)
 
     def create_nav_button(self, text):
         """

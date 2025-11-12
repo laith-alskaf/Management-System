@@ -8,11 +8,15 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from controllers.auth_controller import AuthController
 from utils.syrian_themes import SyrianThemes
+from services.local_db_service import init_db
 
 def main():
     """
     الوظيفة الرئيسية التي تقوم بتشغيل التطبيق.
     """
+    # تهيئة قاعدة البيانات وإنشاء الجداول
+    init_db()
+
     app = QApplication(sys.argv)
 
     # تطبيق الثيم المركزي على التطبيق بالكامل
