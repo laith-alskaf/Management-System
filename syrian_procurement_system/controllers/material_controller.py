@@ -15,7 +15,6 @@ class MaterialController:
     فئة وحدة التحكم للمواد.
     """
     def __init__(self):
-        self.db_service = LocalDbService()
         self.view = MaterialsView(self)
         self.thread_pool = QThreadPool.globalInstance()
         self._connect_signals()
@@ -48,7 +47,7 @@ class MaterialController:
         self._set_loading_state(False)
 
     def load_materials(self):
-        worker = Worker(self.db_service.get_all_materials)
+        worker = Worker(LocalDbService.get_all_materials)
         worker.signals.result.connect(self._on_load_materials_result)
         worker.signals.error.connect(self._on_task_error)
         self.thread_pool.start(worker)
@@ -63,14 +62,14 @@ class MaterialController:
             if not data['name']:
                 self.view.show_message("خطأ في الإدخال", "اسم المادة حقل إلزامي.", is_error=True)
                 return
-            self._run_task(self.db_service.add_material, **data, on_success_msg="تمت إضافة المادة بنجاح.")
+            self._run_task(LocalDbService.add_material, **data, on_success_msg="تمت إضافة المادة بنجاح.")
 
     def _edit_material_dialog(self):
         material_id = self.view.get_selected_material_id()
         if material_id is None:
             return
 
-        material = self.db_service.get_material_by_id(material_id)
+        material = LocalDbService.get_material_by_id(material_id)
         if not material:
             self.view.show_message("خطأ", "المادة المحددة غير موجودة.", is_error=True)
             return
@@ -86,7 +85,7 @@ class MaterialController:
             if not new_data['name']:
                 self.view.show_message("خطأ في الإدخال", "اسم المادة حقل إلزامي.", is_error=True)
                 return
-            self._run_task(self.db_service.update_material, material_id, **new_data, on_success_msg="تم تحديث بيانات المادة بنجاح.")
+            self._run_task(LocalDbService.update_material, material_id, **new_data, on_success_msg="تم تحديث بيانات المادة بنجاح.")
 
     def _delete_material(self):
         material_id = self.view.get_selected_material_id()
@@ -99,7 +98,7 @@ class MaterialController:
                                      QMessageBox.StandardButton.No)
 
         if reply == QMessageBox.StandardButton.Yes:
-            self._run_task(self.db_service.delete_material, material_id, on_success_msg="تم حذف المادة بنجاح.")
+            self._run_task(LocalDbService.delete_material, material_id, on_success_msg="تم حذف المادة بنجاح.")
 
     def _set_loading_state(self, is_loading):
         buttons = [self.view.add_button, self.view.edit_button, self.view.delete_button]

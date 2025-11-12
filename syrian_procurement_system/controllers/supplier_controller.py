@@ -15,7 +15,6 @@ class SupplierController:
     فئة وحدة التحكم للموردين.
     """
     def __init__(self):
-        self.db_service = LocalDbService()
         self.view = SuppliersView(self)
         self.thread_pool = QThreadPool.globalInstance()
         self._connect_signals()
@@ -66,7 +65,7 @@ class SupplierController:
         تحميل بيانات الموردين من قاعدة البيانات وعرضها في الجدول.
         """
         self._set_loading_state(True)
-        worker = Worker(self.db_service.get_all_suppliers)
+        worker = Worker(LocalDbService.get_all_suppliers)
         worker.signals.result.connect(self._on_load_suppliers_result)
         worker.signals.error.connect(self._on_task_error)
         worker.signals.finished.connect(lambda: self._set_loading_state(False))
@@ -88,7 +87,7 @@ class SupplierController:
             if not data['name']:
                 self.view.show_message("خطأ في الإدخال", "اسم المورد حقل إلزامي.", is_error=True)
                 return
-            self._run_task(self.db_service.add_supplier, **data, on_success_msg="تمت إضافة المورد بنجاح.")
+            self._run_task(LocalDbService.add_supplier, **data, on_success_msg="تمت إضافة المورد بنجاح.")
 
     def _edit_supplier_dialog(self):
         """
@@ -98,7 +97,7 @@ class SupplierController:
         if supplier_id is None:
             return
 
-        supplier = self.db_service.get_supplier_by_id(supplier_id)
+        supplier = LocalDbService.get_supplier_by_id(supplier_id)
         if not supplier:
             self.view.show_message("خطأ", "المورد المحدد غير موجود.", is_error=True)
             return
@@ -114,7 +113,7 @@ class SupplierController:
             if not new_data['name']:
                 self.view.show_message("خطأ في الإدخال", "اسم المورد حقل إلزامي.", is_error=True)
                 return
-            self._run_task(self.db_service.update_supplier, supplier_id, **new_data, on_success_msg="تم تحديث بيانات المورد بنجاح.")
+            self._run_task(LocalDbService.update_supplier, supplier_id, **new_data, on_success_msg="تم تحديث بيانات المورد بنجاح.")
 
     def _delete_supplier(self):
         """
@@ -130,7 +129,7 @@ class SupplierController:
                                      QMessageBox.StandardButton.No)
 
         if reply == QMessageBox.StandardButton.Yes:
-            self._run_task(self.db_service.delete_supplier, supplier_id, on_success_msg="تم حذف المورد بنجاح.")
+            self._run_task(LocalDbService.delete_supplier, supplier_id, on_success_msg="تم حذف المورد بنجاح.")
 
     def _set_loading_state(self, is_loading):
         """
