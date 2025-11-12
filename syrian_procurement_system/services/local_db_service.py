@@ -28,6 +28,7 @@ def init_db():
     """
     # استيراد النماذج هنا لضمان تسجيلها مع Base
     from models.supplier_model import Supplier
+    from models.material_model import Material
     Base.metadata.create_all(bind=engine)
 
 class LocalDbService:
@@ -108,6 +109,65 @@ class LocalDbService:
         supplier = self.db.query(Supplier).filter(Supplier.id == supplier_id).first()
         if supplier:
             self.db.delete(supplier)
+            self.db.commit()
+            return True
+        return False
+
+    # --- CRUD Operations for Materials ---
+
+    def add_material(self, name, category, quantity, price, expiry_date):
+        """
+        يضيف مادة جديدة إلى قاعدة البيانات.
+        """
+        from models.material_model import Material
+        new_material = Material(
+            name=name,
+            category=category,
+            quantity=quantity,
+            price=price,
+            expiry_date=expiry_date
+        )
+        self.db.add(new_material)
+        self.db.commit()
+        self.db.refresh(new_material)
+        return new_material
+
+    def get_all_materials(self):
+        """
+        يسترجع جميع المواد من قاعدة البيانات.
+        """
+        from models.material_model import Material
+        return self.db.query(Material).all()
+
+    def get_material_by_id(self, material_id):
+        """
+        يسترجع مادة محددة بواسطة معرفها.
+        """
+        from models.material_model import Material
+        return self.db.query(Material).filter(Material.id == material_id).first()
+
+    def update_material(self, material_id, name, category, quantity, price, expiry_date):
+        """
+        يحدّث بيانات مادة موجودة.
+        """
+        material = self.get_material_by_id(material_id)
+        if material:
+            material.name = name
+            material.category = category
+            material.quantity = quantity
+            material.price = price
+            material.expiry_date = expiry_date
+            self.db.commit()
+            return material
+        return None
+
+    def delete_material(self, material_id):
+        """
+        يحذف مادة من قاعدة البيانات.
+        """
+        material = self.get_material_by_id(material_id)
+        if material:
+            self.db.delete(material)
             self.db.commit()
             return True
         return False
