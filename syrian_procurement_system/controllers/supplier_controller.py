@@ -84,9 +84,6 @@ class SupplierController:
         dialog = SupplierDialog(parent=self.view)
         if dialog.exec():
             data = dialog.get_data()
-            if not data['name']:
-                self.view.show_message("خطأ في الإدخال", "اسم المورد حقل إلزامي.", is_error=True)
-                return
             self._run_task(LocalDbService.add_supplier, **data, on_success_msg="تمت إضافة المورد بنجاح.")
 
     def _edit_supplier_dialog(self):
@@ -104,7 +101,8 @@ class SupplierController:
 
         supplier_data = {
             'name': supplier.name, 'contact_person': supplier.contact_person, 'phone': supplier.phone,
-            'email': supplier.email, 'address': supplier.address
+            'email': supplier.email, 'address': supplier.address, 'tax_number': supplier.tax_number,
+            'rating': supplier.rating
         }
 
         dialog = SupplierDialog(supplier_data=supplier_data, parent=self.view)

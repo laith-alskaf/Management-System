@@ -20,6 +20,7 @@ class Material(Base):
     quantity = Column(Integer, nullable=False, default=0)
     price = Column(Float, nullable=False, default=0.0)
     expiry_date = Column(Date, nullable=True)
+    barcode = Column(String, nullable=True, unique=True)
 
     # يمكن إضافة علاقة مع الموردين لاحقاً إذا أردنا معرفة من أي مورد تم شراء المادة
     # supplier_id = Column(Integer, ForeignKey('suppliers.id'))

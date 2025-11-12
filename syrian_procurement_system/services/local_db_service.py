@@ -28,10 +28,13 @@ class LocalDbService:
     """
 
     @staticmethod
-    def add_supplier(name, contact_person, phone, email, address):
+    def add_supplier(name, contact_person, phone, email, address, tax_number, rating):
         from models.supplier_model import Supplier
         with SessionLocal() as db:
-            new_supplier = Supplier(name=name, contact_person=contact_person, phone=phone, email=email, address=address)
+            new_supplier = Supplier(
+                name=name, contact_person=contact_person, phone=phone, email=email, address=address,
+                tax_number=tax_number, rating=rating
+            )
             db.add(new_supplier)
             db.commit()
             db.refresh(new_supplier)
@@ -50,7 +53,7 @@ class LocalDbService:
             return db.query(Supplier).filter(Supplier.id == supplier_id).first()
 
     @staticmethod
-    def update_supplier(supplier_id, name, contact_person, phone, email, address):
+    def update_supplier(supplier_id, name, contact_person, phone, email, address, tax_number, rating):
         from models.supplier_model import Supplier
         with SessionLocal() as db:
             supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
@@ -60,6 +63,8 @@ class LocalDbService:
                 supplier.phone = phone
                 supplier.email = email
                 supplier.address = address
+                supplier.tax_number = tax_number
+                supplier.rating = rating
                 db.commit()
             return supplier
 
@@ -75,10 +80,13 @@ class LocalDbService:
             return False
 
     @staticmethod
-    def add_material(name, category, quantity, price, expiry_date):
+    def add_material(name, category, quantity, price, expiry_date, barcode):
         from models.material_model import Material
         with SessionLocal() as db:
-            new_material = Material(name=name, category=category, quantity=quantity, price=price, expiry_date=expiry_date)
+            new_material = Material(
+                name=name, category=category, quantity=quantity, price=price, expiry_date=expiry_date,
+                barcode=barcode
+            )
             db.add(new_material)
             db.commit()
             db.refresh(new_material)
@@ -97,7 +105,7 @@ class LocalDbService:
             return db.query(Material).filter(Material.id == material_id).first()
 
     @staticmethod
-    def update_material(material_id, name, category, quantity, price, expiry_date):
+    def update_material(material_id, name, category, quantity, price, expiry_date, barcode):
         from models.material_model import Material
         with SessionLocal() as db:
             material = db.query(Material).filter(Material.id == material_id).first()
@@ -107,6 +115,7 @@ class LocalDbService:
                 material.quantity = quantity
                 material.price = price
                 material.expiry_date = expiry_date
+                material.barcode = barcode
                 db.commit()
             return material
 

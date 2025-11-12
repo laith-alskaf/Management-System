@@ -59,9 +59,6 @@ class MaterialController:
         dialog = MaterialDialog(parent=self.view)
         if dialog.exec():
             data = dialog.get_data()
-            if not data['name']:
-                self.view.show_message("خطأ في الإدخال", "اسم المادة حقل إلزامي.", is_error=True)
-                return
             self._run_task(LocalDbService.add_material, **data, on_success_msg="تمت إضافة المادة بنجاح.")
 
     def _edit_material_dialog(self):
@@ -76,7 +73,7 @@ class MaterialController:
 
         material_data = {
             'name': material.name, 'category': material.category, 'quantity': material.quantity,
-            'price': material.price, 'expiry_date': material.expiry_date
+            'price': material.price, 'expiry_date': material.expiry_date, 'barcode': material.barcode
         }
 
         dialog = MaterialDialog(material_data=material_data, parent=self.view)

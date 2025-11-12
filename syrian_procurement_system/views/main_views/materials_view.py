@@ -43,9 +43,10 @@ class MaterialsView(QWidget):
         actions_layout.addStretch()
         main_layout.addLayout(actions_layout)
 
+        from config.app_settings import CURRENCY_SYMBOL
         self.table = QTableWidget()
-        self.table.setColumnCount(6)
-        self.table.setHorizontalHeaderLabels(["المعرف", "اسم المادة", "التصنيف", "الكمية", "السعر", "تاريخ الصلاحية"])
+        self.table.setColumnCount(7)
+        self.table.setHorizontalHeaderLabels(["المعرف", "اسم المادة", "التصنيف", "الكمية", f"السعر ({CURRENCY_SYMBOL})", "تاريخ الصلاحية", "الباركود"])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
@@ -66,6 +67,7 @@ class MaterialsView(QWidget):
             self.table.setItem(row, 4, QTableWidgetItem(str(material.price)))
             expiry_date_str = material.expiry_date.strftime('%Y-%m-%d') if material.expiry_date else "لا يوجد"
             self.table.setItem(row, 5, QTableWidgetItem(expiry_date_str))
+            self.table.setItem(row, 6, QTableWidgetItem(material.barcode))
         self.table.setColumnHidden(0, True)
 
     def get_selected_material_id(self):
@@ -90,9 +92,11 @@ class MaterialsView(QWidget):
         msg_box.setIcon(QMessageBox.Icon.Warning if is_error else QMessageBox.Icon.Information)
         msg_box.exec()
 
+from utils.validators import is_required, is_numeric, is_integer, run_validators
+
 class MaterialDialog(QDialog):
     """
-    نافذة حوار لإضافة أو تعديل بيانات مادة.
+    نافذة حوار لإضافة أو تعديل بيانات مادة مع التحقق من صحة البيانات.
     """
     def __init__(self, material_data=None, parent=None):
         super().__init__(parent)
@@ -106,41 +110,65 @@ class MaterialDialog(QDialog):
         self.quantity_input = QLineEdit()
         self.price_input = QLineEdit()
         self.expiry_date_input = QDateEdit()
+        self.barcode_input = QLineEdit()
         self.expiry_date_input.setCalendarPopup(True)
         self.expiry_date_input.setDisplayFormat("yyyy-MM-dd")
 
-        self.form_layout.addRow("اسم المادة:", self.name_input)
+        self.form_layout.addRow("اسم المادة*:", self.name_input)
         self.form_layout.addRow("التصنيف:", self.category_input)
-        self.form_layout.addRow("الكمية:", self.quantity_input)
-        self.form_layout.addRow("السعر:", self.price_input)
+        self.form_layout.addRow("الكمية*:", self.quantity_input)
+        self.form_layout.addRow("السعر*:", self.price_input)
         self.form_layout.addRow("تاريخ الصلاحية:", self.expiry_date_input)
+        self.form_layout.addRow("الباركود:", self.barcode_input)
 
         if material_data:
             self.name_input.setText(material_data.get('name', ''))
             self.category_input.setText(material_data.get('category', ''))
             self.quantity_input.setText(str(material_data.get('quantity', '')))
             self.price_input.setText(str(material_data.get('price', '')))
+            self.barcode_input.setText(material_data.get('barcode', ''))
             expiry_date = material_data.get('expiry_date')
             if expiry_date:
                 self.expiry_date_input.setDate(QDate.fromString(str(expiry_date), "yyyy-MM-dd"))
             else:
                 self.expiry_date_input.setDate(QDate.currentDate())
+        else:
+            self.expiry_date_input.setDate(QDate.currentDate())
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        self.button_box.accepted.connect(self.accept)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButton-Box.StandardButton.Cancel)
+        self.button_box.accepted.connect(self.validate_and_accept)
         self.button_box.rejected.connect(self.reject)
         self.button_box.button(QDialogButtonBox.StandardButton.Ok).setText("حفظ")
         self.button_box.button(QDialogButtonBox.StandardButton.Cancel).setText("إلغاء")
         self.form_layout.addRow(self.button_box)
 
+    def get_data_for_validation(self):
+        return {
+            "name": self.name_input.text(),
+            "quantity": self.quantity_input.text(),
+            "price": self.price_input.text()
+        }
+
     def get_data(self):
-        """
-        تُرجع البيانات المدخلة في النموذج.
-        """
         return {
             "name": self.name_input.text().strip(),
             "category": self.category_input.text().strip(),
-            "quantity": int(self.quantity_input.text()) if self.quantity_input.text().isdigit() else 0,
-            "price": float(self.price_input.text()) if self.price_input.text().replace('.', '', 1).isdigit() else 0.0,
-            "expiry_date": self.expiry_date_input.date().toPyDate()
+            "quantity": int(self.quantity_input.text()),
+            "price": float(self.price_input.text()),
+            "expiry_date": self.expiry_date_input.date().toPyDate(),
+            "barcode": self.barcode_input.text().strip()
         }
+
+    def validate_and_accept(self):
+        data = self.get_data_for_validation()
+        rules = {
+            'name': [(is_required, "اسم المادة")],
+            'quantity': [(is_required, "الكمية"), (is_integer, "الكمية")],
+            'price': [(is_required, "السعر"), (is_numeric, "السعر")]
+        }
+
+        validation_result = run_validators(data, rules)
+        if not validation_result:
+            QMessageBox.warning(self, "خطأ في الإدخال", validation_result.message)
+        else:
+            self.accept()
