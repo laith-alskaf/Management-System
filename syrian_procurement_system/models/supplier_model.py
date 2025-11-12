@@ -19,6 +19,8 @@ class Supplier(Base):
     phone = Column(String, nullable=True)
     email = Column(String, nullable=True, unique=True)
     address = Column(String, nullable=True)
+    tax_number = Column(String, nullable=True, unique=True)
+    rating = Column(Integer, nullable=True)
 
     def __repr__(self):
         return f"<Supplier(id={self.id}, name='{self.name}')>"
