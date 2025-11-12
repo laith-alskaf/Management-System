@@ -54,7 +54,7 @@ class LocalDbService:
 
     # --- CRUD Operations for Suppliers ---
 
-    def add_supplier(self, name, contact_person, phone, address):
+    def add_supplier(self, name, contact_person, phone, email, address):
         """
         يضيف موردًا جديدًا إلى قاعدة البيانات.
         """
@@ -63,6 +63,7 @@ class LocalDbService:
             name=name,
             contact_person=contact_person,
             phone=phone,
+            email=email,
             address=address
         )
         self.db.add(new_supplier)
@@ -77,16 +78,23 @@ class LocalDbService:
         from models.supplier_model import Supplier
         return self.db.query(Supplier).all()
 
-    def update_supplier(self, supplier_id, name, contact_person, phone, address):
+    def get_supplier_by_id(self, supplier_id):
+        """
+        يسترجع موردًا محددًا بواسطة معرفه.
+        """
+        from models.supplier_model import Supplier
+        return self.db.query(Supplier).filter(Supplier.id == supplier_id).first()
+
+    def update_supplier(self, supplier_id, name, contact_person, phone, email, address):
         """
         يحدّث بيانات مورد موجود.
         """
-        from models.supplier_model import Supplier
-        supplier = self.db.query(Supplier).filter(Supplier.id == supplier_id).first()
+        supplier = self.get_supplier_by_id(supplier_id)
         if supplier:
             supplier.name = name
             supplier.contact_person = contact_person
             supplier.phone = phone
+            supplier.email = email
             supplier.address = address
             self.db.commit()
             return supplier
