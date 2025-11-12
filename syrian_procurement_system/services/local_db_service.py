@@ -18,6 +18,7 @@ Base = declarative_base()
 def init_db():
     from models.supplier_model import Supplier
     from models.material_model import Material
+    from models.order_model import Order, OrderItem
     Base.metadata.create_all(bind=engine)
 
 class LocalDbService:
