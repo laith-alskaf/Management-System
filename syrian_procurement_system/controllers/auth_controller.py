@@ -5,6 +5,7 @@
 """
 
 from PyQt6.QtCore import QThreadPool
+from PyQt6.QtWidgets import QApplication
 from services.firebase_service import FirebaseService
 from views.auth_views.login_view import LoginView
 from controllers.dashboard_controller import DashboardController
@@ -86,6 +87,8 @@ class AuthController:
         else:
             self.login_view.login_button.setText("تسجيل الدخول")
             self.login_view.login_button.setEnabled(True)
+
+        QApplication.processEvents()  # إجبار الواجهة على التحديث فوراً
 
     def _show_error(self, message):
         """

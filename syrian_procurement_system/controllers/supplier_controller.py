@@ -1,89 +1,143 @@
 # -*- coding: utf-8 -*-
 
 """
-وحدة التحكم الخاصة بالموردين
+وحدة التحكم الخاصة بإدارة الموردين
 """
 
+from PyQt6.QtCore import QThreadPool
+from PyQt6.QtWidgets import QMessageBox, QApplication
 from services.local_db_service import LocalDbService
 from views.main_views.suppliers_view import SuppliersView, SupplierDialog
-from models.supplier_model import Supplier
+from utils.worker import Worker
 
 class SupplierController:
     """
-    فئة وحدة التحكم لإدارة الموردين.
+    فئة وحدة التحكم للموردين.
     """
     def __init__(self):
         self.db_service = LocalDbService()
         self.view = SuppliersView(self)
+        self.thread_pool = QThreadPool.globalInstance()
         self._connect_signals()
-        self.load_suppliers()
-
-    def _connect_signals(self):
-        """
-        يربط إشارات الواجهة بوظائف المتحكم.
-        """
-        self.view.add_button.clicked.connect(self.show_add_dialog)
-        self.view.edit_button.clicked.connect(self.show_edit_dialog)
-        self.view.delete_button.clicked.connect(self.delete_supplier)
+        self._load_suppliers()
 
     def get_view(self):
         """
-        تُرجع الواجهة التي يديرها هذا المتحكم.
+        تُرجع الواجهة التي تديرها وحدة التحكم هذه.
         """
         return self.view
 
-    def load_suppliers(self):
+    def _connect_signals(self):
         """
-        تحميل قائمة الموردين من قاعدة البيانات وعرضها في الجدول.
+        تربط إشارات الواجهة بالوظائف المناسبة.
         """
-        suppliers = self.db_service.get_all_suppliers()
-        self.view.set_table_data(suppliers)
+        self.view.add_button.clicked.connect(self._add_supplier_dialog)
+        self.view.edit_button.clicked.connect(self._edit_supplier_dialog)
+        self.view.delete_button.clicked.connect(self._delete_supplier)
 
-    def show_add_dialog(self):
+    def _run_task(self, task_fn, *args, on_success_msg):
         """
-        يعرض نافذة إضافة مورد جديد.
+        يشغل مهمة في خيط منفصل ويعالج النتائج.
         """
-        dialog = SupplierDialog()
+        self._set_loading_state(True)
+        worker = Worker(task_fn, *args)
+        worker.signals.result.connect(lambda result: self._on_task_success(on_success_msg))
+        worker.signals.error.connect(self._on_task_error)
+        worker.signals.finished.connect(lambda: self._set_loading_state(False))
+        self.thread_pool.start(worker)
+
+    def _on_task_success(self, message):
+        """
+        يتم استدعاؤها عند نجاح المهمة.
+        """
+        self._load_suppliers()
+        self.view.show_message("نجاح", message)
+
+    def _on_task_error(self, error_details):
+        """
+        يتم استدعاؤها عند فشل المهمة.
+        """
+        ex_type, ex_value, _ = error_details
+        error_message = f"فشلت العملية. قد يكون الاسم أو البريد الإلكتروني مسجلاً مسبقاً.\nالتفاصيل: {ex_value}"
+        self.view.show_message("خطأ", error_message, is_error=True)
+
+    def _load_suppliers(self):
+        """
+        تحميل بيانات الموردين من قاعدة البيانات وعرضها في الجدول.
+        """
+        self._set_loading_state(True)
+        worker = Worker(self.db_service.get_all_suppliers)
+        worker.signals.result.connect(self._on_load_suppliers_result)
+        worker.signals.error.connect(self._on_task_error)
+        worker.signals.finished.connect(lambda: self._set_loading_state(False))
+        self.thread_pool.start(worker)
+
+    def _on_load_suppliers_result(self, suppliers):
+        """
+        يتم استدعاؤها عند نجاح تحميل الموردين.
+        """
+        self.view.populate_table(suppliers)
+
+    def _add_supplier_dialog(self):
+        """
+        تفتح نافذة لإضافة مورد جديد.
+        """
+        dialog = SupplierDialog(parent=self.view)
         if dialog.exec():
             data = dialog.get_data()
             if not data['name']:
-                self.view.show_error("خطأ في الإدخال", "اسم المورد حقل إلزامي.")
+                self.view.show_message("خطأ في الإدخال", "اسم المورد حقل إلزامي.", is_error=True)
                 return
-            self.db_service.add_supplier(**data)
-            self.load_suppliers() # إعادة تحميل البيانات لتحديث الجدول
-            self.view.show_message("نجاح", "تمت إضافة المورد بنجاح.")
+            self._run_task(self.db_service.add_supplier, **data, on_success_msg="تمت إضافة المورد بنجاح.")
 
-    def show_edit_dialog(self):
+    def _edit_supplier_dialog(self):
         """
-        يعرض نافذة تعديل بيانات المورد المحدد.
+        تفتح نافذة لتعديل المورد المحدد.
         """
         supplier_id = self.view.get_selected_supplier_id()
         if supplier_id is None:
-            self.view.show_error("خطأ", "الرجاء تحديد مورد لتعديله.")
             return
 
-        supplier = self.db_service.db.get(Supplier, supplier_id)
+        supplier = self.db_service.get_supplier_by_id(supplier_id)
+        if not supplier:
+            self.view.show_message("خطأ", "المورد المحدد غير موجود.", is_error=True)
+            return
 
-        dialog = SupplierDialog(supplier=supplier)
+        supplier_data = {
+            'name': supplier.name, 'contact_person': supplier.contact_person, 'phone': supplier.phone,
+            'email': supplier.email, 'address': supplier.address
+        }
+
+        dialog = SupplierDialog(supplier_data=supplier_data, parent=self.view)
         if dialog.exec():
-            data = dialog.get_data()
-            if not data['name']:
-                self.view.show_error("خطأ في الإدخال", "اسم المورد حقل إلزامي.")
+            new_data = dialog.get_data()
+            if not new_data['name']:
+                self.view.show_message("خطأ في الإدخال", "اسم المورد حقل إلزامي.", is_error=True)
                 return
-            self.db_service.update_supplier(supplier_id, **data)
-            self.load_suppliers()
-            self.view.show_message("نجاح", "تم تحديث بيانات المورد بنجاح.")
+            self._run_task(self.db_service.update_supplier, supplier_id, **new_data, on_success_msg="تم تحديث بيانات المورد بنجاح.")
 
-    def delete_supplier(self):
+    def _delete_supplier(self):
         """
-        يحذف المورد المحدد من قاعدة البيانات.
+        تحذف المورد المحدد بعد التأكيد.
         """
         supplier_id = self.view.get_selected_supplier_id()
         if supplier_id is None:
-            self.view.show_error("خطأ", "الرجاء تحديد مورد لحذفه.")
             return
 
-        if self.view.show_confirm_dialog("تأكيد الحذف", "هل أنت متأكد أنك تريد حذف هذا المورد؟"):
-            self.db_service.delete_supplier(supplier_id)
-            self.load_suppliers()
-            self.view.show_message("نجاح", "تم حذف المورد بنجاح.")
+        reply = QMessageBox.question(self.view, 'تأكيد الحذف',
+                                     'هل أنت متأكد أنك تريد حذف هذا المورد؟',
+                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                     QMessageBox.StandardButton.No)
+
+        if reply == QMessageBox.StandardButton.Yes:
+            self._run_task(self.db_service.delete_supplier, supplier_id, on_success_msg="تم حذف المورد بنجاح.")
+
+    def _set_loading_state(self, is_loading):
+        """
+        تغيير حالة واجهة المستخدم لتعكس حالة التحميل.
+        """
+        buttons = [self.view.add_button, self.view.edit_button, self.view.delete_button]
+        for button in buttons:
+            button.setEnabled(not is_loading)
+
+        QApplication.instance().processEvents()
