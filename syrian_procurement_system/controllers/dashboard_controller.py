@@ -5,7 +5,7 @@
 """
 
 # المسارات النسبية قد تحتاج إلى تعديل عند التشغيل من main.py
-from syrian_procurement_system.views.main_views.dashboard_view import DashboardView
+from views.main_views.dashboard_view import DashboardView
 
 class DashboardController:
     """

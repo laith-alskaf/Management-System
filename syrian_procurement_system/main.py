@@ -6,8 +6,8 @@
 
 import sys
 from PyQt6.QtWidgets import QApplication
-from syrian_procurement_system.controllers.auth_controller import AuthController
-from syrian_procurement_system.utils.syrian_themes import SyrianThemes
+from controllers.auth_controller import AuthController
+from utils.syrian_themes import SyrianThemes
 
 def main():
     """

@@ -138,7 +138,7 @@ class DashboardView(QMainWindow):
 
 # كود للاختبار المستقل
 if __name__ == '__main__':
-    from syrian_procurement_system.utils.syrian_themes import SyrianThemes
+    from utils.syrian_themes import SyrianThemes
     app = QApplication(sys.argv)
 
     # تطبيق الثيم الرئيسي

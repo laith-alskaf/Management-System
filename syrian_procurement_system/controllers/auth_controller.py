@@ -4,9 +4,9 @@
 وحدة التحكم الخاصة بالمصادقة (Authentication Controller)
 """
 
-from syrian_procurement_system.services.firebase_service import FirebaseService
-from syrian_procurement_system.views.auth_views.login_view import LoginView
-from syrian_procurement_system.controllers.dashboard_controller import DashboardController
+from services.firebase_service import FirebaseService
+from views.auth_views.login_view import LoginView
+from controllers.dashboard_controller import DashboardController
 
 class AuthController:
     """
